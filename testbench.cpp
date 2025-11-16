@@ -1,47 +1,40 @@
-#include "Valu.h"          // сгенерированный Verilator заголовок для модуля alu
+#include "Vreg_file.h"          // сгенерированный Verilator заголовок для модуля alu
 #include "verilated.h"
 #include <iostream>
 
 int main(int argc, char **argv) {
     Verilated::commandArgs(argc, argv);  // инициализация Verilator
 
-    Valu* alu = new Valu;  // создаем экземпляр модуля
+    Vreg_file* top = new Vreg_file;  // создаем экземпляр модуля
 
-    // Пример входов
-    uint32_t a = 15;
-    uint32_t b = 3;
+    top->reset = 1;
+    top->clk = 0;
+    top->in_data = 0;
+    top->in_reg = 0;
+    top->write = 0;
+    top->out_reg1 = 0;
+    top->out_reg2 = 0;
+    
+    top->eval();
 
-    // Пробуем разные комбинации funct3/funct7
-    struct TestCase {
-        uint8_t funct3;
-        uint8_t funct7;
-        const char* name;
-    } tests[] = {
-        {0b000, 0b0000000, "ADD"},
-        {0b000, 0b0100000, "SUB"},
-        {0b001, 0b0000000, "SLL"},
-        {0b010, 0b0000000, "SLT"},
-        {0b011, 0b0000000, "SLTU"},
-        {0b100, 0b0000000, "XOR"},
-        {0b101, 0b0000000, "SRL"},
-        {0b101, 0b0100000, "SRA"},
-        {0b110, 0b0000000, "OR"},
-        {0b111, 0b0000000, "AND"},
-    };
+    top->reset = 0;
+    top->clk = 1;
+    top->in_data = 32;
+    top->in_reg = 5;
+    top->write = 1;
 
-    for (auto& t : tests) {
-        alu->a = a;
-        alu->b = b;
-        alu->funct3 = t.funct3;
-        alu->funct7 = t.funct7;
+    top->eval();
 
-        alu->eval();  // шаг симуляции
+    top->clk = 0;
 
-        std::cout << t.name << ": "
-                  << a << " and " << b
-                  << " -> " << alu->result << std::endl;
-    }
+    top->eval();
 
-    delete alu;
+    top->out_reg1 = 5;
+
+    top->eval();
+
+    std::cout << top->data_out1 << std::endl;
+
+    delete top;
     return 0;
 }
